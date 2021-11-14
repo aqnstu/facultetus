@@ -39,5 +39,5 @@ def str_to_datetaime(s: str, format: str):
     return datetime.strptime(s, format)
 
 
-def transform_list_to_str(elems: list, delimeter: str = ';') -> str:
-    return delimeter.join([elem['data'] for elem in elems])
+def transform_list_to_str(elems: list, delimeter: str = ";") -> str:
+    return delimeter.join([elem["data"] for elem in elems])

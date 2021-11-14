@@ -13,7 +13,7 @@ from misc.log import logger
 from misc.tables import FacultetusUniversity
 
 
-@exit_on_fail('university.py')
+@exit_on_fail("university.py")
 def main():
     current_offset = 0
     while True:
@@ -23,29 +23,31 @@ def main():
             headers={
                 "Content-Type": "application/json; charset=UTF-8",
             },
-            params={
-                'offset': current_offset
-            }
+            params={"offset": current_offset},
         )
 
-        if not response.json().get('response'):
+        if not response.json().get("response"):
             break
 
-        for university in response.json()['response']:
-            if not session.query(FacultetusUniversity).filter(
-                FacultetusUniversity.university_id == university['university_id']
-            ).one_or_none():
+        for university in response.json()["response"]:
+            if (
+                not session.query(FacultetusUniversity)
+                .filter(
+                    FacultetusUniversity.university_id == university["university_id"]
+                )
+                .one_or_none()
+            ):
                 session.add(FacultetusUniversity(**university))
         session.commit()
 
         # limit игнорируется, возвращается по 50 универов
-        current_offset += api_config['OFFSET'] + 30
+        current_offset += api_config["OFFSET"] + 30
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     start = time()
     main()
     end = time()
     time_spent = f"Total time spent: {end - start} sec"
-    logger.getLogger('university.py').info(time_spent)
+    logger.getLogger("university.py").info(time_spent)
     print(f">> {time_spent} sec")
