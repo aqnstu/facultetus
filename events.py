@@ -33,6 +33,7 @@ def main():
                     "limit": api_config["LIMIT"],
                 },
             )
+            print(response.json().get("response"))
 
             if not response.json().get("response"):
                 break
@@ -44,26 +45,28 @@ def main():
                     .one_or_none()
                 ):
                     event["created"] = str_to_datetaime(
-                        event.get("created"), "%Y-%m-%d %H:%M:%S"
+                        event.get("created"), ["%Y-%m-%d %H:%M:%S"]
                     )
                     event["date_start"] = str_to_datetaime(
-                        event.get("date_start"), "%Y-%m-%d"
+                        event.get("date_start"), ["%Y-%m-%d"]
                     )
                     event["time_start"] = str_to_datetaime(
-                        event.get("time_start"), "%H:%M:%S"
+                        event.get("time_start"), ["%H:%M:%S"]
                     )
                     event["date_end"] = str_to_datetaime(
-                        event.get("date_end"), "%Y-%m-%d"
+                        event.get("date_end"), ["%Y-%m-%d"]
                     )
                     event["time_end"] = str_to_datetaime(
-                        event.get("time_end"), "%H:%M:%S"
+                        event.get("time_end"), ["%H:%M:%S"]
                     )
                     event["local_datetime"] = str_to_datetaime(
-                        event.get("local_datetime"), "%Y-%m-%d %H:%M:%S"
+                        event.get("local_datetime"), ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]
                     )
                     event["local_datetime_end"] = str_to_datetaime(
                         event.get("local_datetime_end"), "%Y-%m-%d %H:%M:%S"
                     )
+                    event["photo_payload"] = ",".join(event.get("photo_payload") or []) \
+                        if not event.get("photo_payload") else None
                     session.add(FacultetusActivity(**event))
             session.commit()
 

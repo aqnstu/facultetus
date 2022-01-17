@@ -11,19 +11,19 @@ class FacultetusActivity(Base):
     __tablename__ = "facultetus_activity"
     __table_args__ = {"schema": "apiuser"}
 
-    id = Column(Integer, primary_key=True, comment="ID события")
+    id = Column(VARCHAR(10), primary_key=True, comment='ID события')
     created = Column(TIMESTAMP, comment="Дата создания")
-    cprofile_id = Column(Integer, comment="ID создателя")
+    cprofile_id = Column(VARCHAR(10), comment='ID создателя')
     type = Column(VARCHAR(30), comment="Тип события")
     type_text = Column(VARCHAR(30), comment="Тип события")
     published = Column(VARCHAR(1), comment="Статус публикации")
     students_moderation = Column(VARCHAR(1), comment="Модерация участников")
     students_reg = Column(VARCHAR(1), comment="Регистрация участников")
     cprofiles_moderation = Column(VARCHAR(1), comment="Модерация организаций")
-    leader_event_id = Column(Integer, comment="ID события на Leader-id")
-    timepad_event_id = Column(Integer, comment="ID события на Timepad")
-    university_id = Column(Integer, comment="ID университета")
-    fair_id = Column(Integer, comment="ID ярмарки вакансий")
+    leader_event_id = Column(VARCHAR(10), comment="ID события на Leader-id")
+    timepad_event_id = Column(VARCHAR(10), comment="ID события на Timepad")
+    university_id = Column(VARCHAR(10), comment="ID университета")
+    fair_id = Column(VARCHAR(10), comment='ID ярмарки вакансий')
     title = Column(VARCHAR(200), comment="Название события")
     slogan = Column(VARCHAR(200), comment="Краткое описание события")
     description = Column(VARCHAR(4000), comment="Описание события")
@@ -46,7 +46,7 @@ class FacultetusActivity(Base):
     author_logo = Column(VARCHAR(150), comment="Логотип автора события")
     date_added = Column(TIMESTAMP, server_default=text("sysdate"))
     participants_limitation = Column(VARCHAR(1000))
-    vc_event_id = Column(Integer)
+    vc_event_id = Column(VARCHAR(10))
     poll_id = Column(Integer)
     youtube_id = Column(Integer)
     my_rater = Column(VARCHAR(1))
@@ -57,6 +57,8 @@ class FacultetusActivity(Base):
     link_token = Column(VARCHAR(100))
     is_public = Column(VARCHAR(1))
     skip_auth = Column(VARCHAR(1))
+    group_id = Column(VARCHAR(10))
+    photo_payload = Column(VARCHAR(1000))
 
 
 class FacultetusUniversity(Base):

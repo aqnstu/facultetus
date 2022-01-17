@@ -32,11 +32,21 @@ def exit_on_fail(log_module: str):
     return decorator
 
 
-def str_to_datetaime(s: str, format: str):
+def str_to_datetaime(s: str, formats: list):
     if not s:
         return None
 
-    return datetime.strptime(s, format)
+    dt = None
+    for format in formats:
+        try:
+            dt = datetime.strptime(s, format)
+        except Exception:
+            pass
+     
+        if dt:
+            break
+
+    return dt
 
 
 def transform_list_to_str(elems: list, delimeter: str = ";") -> str:
