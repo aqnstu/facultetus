@@ -10,9 +10,10 @@ from time import time
 from configs.facultetus import api_config
 from misc.helpers import exit_on_fail, session, str_to_datetaime
 from misc.log import logger
-from misc.tables import FacultetusActivity
+from misc.tables import FacultetusActivity, FacultetusUniversity
 
-university_ids = [6, 13, 119]
+university_ids_raw = session.query(FacultetusUniversity.university_id).all()
+university_ids = [elem for tup in university_ids_raw for elem in tup]
 
 
 @exit_on_fail("events.py")
@@ -21,7 +22,6 @@ def main():
         print(f"> University ID: {university_id}...")
         current_offset = 0
         while True:
-            print(f">> Page {int(current_offset / api_config['OFFSET'])}...")
             response = get(
                 url=f"https://facultetus.ru/api/{api_config['CLIENT_ID']}/getActivities",
                 headers={
@@ -33,10 +33,12 @@ def main():
                     "limit": api_config["LIMIT"],
                 },
             )
-            print(response.json().get("response"))
 
             if not response.json().get("response"):
+                print("No data found")
                 break
+            else:
+                print(f">> Page {int(current_offset / api_config['OFFSET'])}...")
 
             for event in response.json()["response"]:
                 if (
