@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from sqlalchemy import Column, Integer, TIMESTAMP, VARCHAR, text, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, TIMESTAMP, VARCHAR, text, DateTime
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -124,3 +125,24 @@ class FacultetusVac(Base):
     tests = Column(VARCHAR(300), comment="Привязанные к вакансии тестирования")
     professions = Column(VARCHAR(300), comment="Профессии, релевантные вакансии")
     date_added = Column(TIMESTAMP, server_default=text("sysdate"))
+
+
+class FacultetusSphere(Base):
+    __tablename__ = 'facultetus_sphere'
+    __table_args__ = {'schema': 'apiuser'}
+
+    id = Column(Integer, primary_key=True)
+    name = Column(VARCHAR(150), nullable=False)
+    date_added = Column(TIMESTAMP, nullable=False, server_default=text("sysdate "))
+
+
+class FacultetusEmployerSphere(Base):
+    __tablename__ = 'facultetus_employer_sphere'
+    __table_args__ = {'schema': 'apiuser'}
+
+    id = Column(Integer, primary_key=True)
+    employer_id = Column(Integer)
+    sphere_id = Column(ForeignKey('apiuser.facultetus_sphere.id'))
+    date_added = Column(TIMESTAMP, nullable=False, server_default=text("sysdate "))
+
+    sphere = relationship('FacultetusSphere')
