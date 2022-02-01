@@ -10,7 +10,7 @@ from time import time
 from configs.facultetus import api_config
 from misc.helpers import exit_on_fail, session, str_to_datetaime
 from misc.log import logger
-from misc.tables import FacultetusActivity, FacultetusUniversity
+from misc.tables import FacultetusActivity, FacultetusActivityType, FacultetusUniversity
 
 university_ids_raw = session.query(FacultetusUniversity.university_id).all()
 university_ids = [elem for tup in university_ids_raw for elem in tup]
@@ -18,6 +18,9 @@ university_ids = [elem for tup in university_ids_raw for elem in tup]
 
 @exit_on_fail("events.py")
 def main():
+    types_list = [type.__dict__ for type in session.query(FacultetusActivityType).all()]
+    types_dict = {sphere['name']: sphere['id'] for sphere in types_list}
+
     for university_id in university_ids:
         print(f"> University ID: {university_id}...")
         current_offset = 0
@@ -69,7 +72,18 @@ def main():
                     )
                     event["photo_payload"] = ",".join(event.get("photo_payload") or []) \
                         if not event.get("photo_payload") else None
-                    session.add(FacultetusActivity(**event))
+
+                    if (
+                        not session.query(FacultetusActivityType)
+                        .filter(FacultetusActivityType.name == event["type"])
+                        .one_or_none()
+                    ):
+                        types_dict[event["type"]] = max(types_dict.values()) + 1
+                        session.add(FacultetusActivityType(name=event["type"]))
+
+                    event["type_id"] = types_dict.get(event["type"])
+
+                    # session.add(FacultetusActivity(**event))
             session.commit()
 
             current_offset += api_config["OFFSET"]

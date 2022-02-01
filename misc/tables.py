@@ -146,3 +146,12 @@ class FacultetusEmployerSphere(Base):
     date_added = Column(TIMESTAMP, nullable=False, server_default=text("sysdate "))
 
     sphere = relationship('FacultetusSphere')
+
+
+class FacultetusActivityType(Base):
+    __tablename__ = 'facultetus_activity_type'
+    __table_args__ = {'schema': 'apiuser'}
+
+    id = Column(Integer, primary_key=True)
+    name = Column(VARCHAR(100))
+    date_added = Column(TIMESTAMP, server_default=text("sysdate"))
