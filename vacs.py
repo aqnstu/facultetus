@@ -4,6 +4,7 @@
 Все релевантные вакансии по выбранному ВУЗу.
 """
 
+import copy
 from requests import get
 from sqlalchemy import and_
 from time import time
@@ -11,7 +12,8 @@ from time import time
 from configs.facultetus import api_config
 from misc.helpers import exit_on_fail, session, transform_list_to_str
 from misc.log import logger
-from misc.tables import FacultetusEmployerSphere, FacultetusSphere, FacultetusVac
+from misc.tables import FacultetusEmployerSphere, FacultetusSphere, \
+    FacultetusVac, FacultetusVacSphere
 
 
 @exit_on_fail("vacs.py")
@@ -58,16 +60,17 @@ def main():
             break
 
         for vac in response.json()["response"]:
+            vac["spheres"] = (
+                transform_list_to_str(vac["spheres"])
+                if vac.get("spheres")
+                else None
+            )
+
             if (
                 not session.query(FacultetusVac)
                 .filter(FacultetusVac.position_id == vac["position_id"])
                 .one_or_none()
             ):
-                vac["spheres"] = (
-                    transform_list_to_str(vac["spheres"])
-                    if vac.get("spheres")
-                    else None
-                )
                 vac["langs"] = (
                     transform_list_to_str(vac["langs"]) if vac.get("langs") else None
                 )
@@ -84,29 +87,54 @@ def main():
                 )
                 vac["cash_from"] = int(vac["cash_from"]) if vac["cash_from"] else None
                 vac["cash_to"] = int(vac["cash_to"]) if vac["cash_to"] else None
-                session.add(FacultetusVac(**vac))
+                session.add(FacultetusVac(**vac)) 
+            else:
+                vac_copy = copy.deepcopy(vac)
+                del vac_copy["position_id"]
+                session.query(FacultetusVac) \
+                    .filter(FacultetusVac.position_id == vac["position_id"]) \
+                    .update(vac_copy)
+            session.commit()
 
-                spheres = vac["spheres"] or ''
-                for sphere in spheres.split(";"):
-                    sphere_clean = sphere.strip()
-                    if sphere_clean:
-                        if (
-                            not session.query(
-                                FacultetusEmployerSphere
-                            ).filter(
-                                and_(
-                                    FacultetusEmployerSphere.employer_id == vac["position_id"],
-                                    FacultetusEmployerSphere.sphere_id == spheres_dict.get(sphere_clean, '')
-                                )
-                            ).one_or_none()
-                        ):
-                            session.add(
-                                FacultetusEmployerSphere(
-                                    employer_id=vac["employer_id"],
-                                    sphere_id=spheres_dict.get(sphere_clean, '')
-                                )
+            spheres = vac["spheres"] or ''
+            for sphere in spheres.split(";"):
+                sphere_clean = sphere.strip()
+                if sphere_clean:
+                    if (
+                        not session.query(
+                            FacultetusEmployerSphere
+                        ).filter(
+                            and_(
+                                FacultetusEmployerSphere.employer_id == vac["employer_id"],
+                                FacultetusEmployerSphere.sphere_id == spheres_dict.get(sphere_clean, '')
                             )
-        session.commit()
+                        ).one_or_none()
+                    ):
+                        session.add(
+                            FacultetusEmployerSphere(
+                                employer_id=vac["employer_id"],
+                                sphere_id=spheres_dict.get(sphere_clean, '')
+                            )
+                        )
+                        session.commit()
+
+                    if (
+                        not session.query(
+                            FacultetusVacSphere
+                        ).filter(
+                            and_(
+                                FacultetusVacSphere.position_id == vac["position_id"],
+                                FacultetusVacSphere.sphere_id == spheres_dict.get(sphere_clean, '')
+                            )
+                        ).one_or_none()
+                    ):
+                        session.add(
+                            FacultetusVacSphere(
+                                position_id=vac["position_id"],
+                                sphere_id=spheres_dict.get(sphere_clean, '')
+                            )
+                        )
+                        session.commit()
 
         current_offset += api_config["OFFSET"]
 

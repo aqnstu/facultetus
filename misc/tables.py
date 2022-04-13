@@ -125,6 +125,7 @@ class FacultetusVac(Base):
     tests = Column(VARCHAR(300), comment="Привязанные к вакансии тестирования")
     professions = Column(VARCHAR(300), comment="Профессии, релевантные вакансии")
     date_added = Column(TIMESTAMP, server_default=text("sysdate"))
+    date_updated = Column(TIMESTAMP)
 
 
 class FacultetusSphere(Base):
@@ -155,3 +156,13 @@ class FacultetusActivityType(Base):
     id = Column(Integer, primary_key=True)
     name = Column(VARCHAR(100))
     date_added = Column(TIMESTAMP, server_default=text("sysdate"))
+
+
+class FacultetusVacSphere(Base):
+    __tablename__ = 'facultetus_vac_sphere'
+    __table_args__ = {'schema': 'apiuser'}
+
+    id = Column(Integer, primary_key=True)
+    position_id = Column(VARCHAR(100))
+    sphere_id = Column(ForeignKey('apiuser.facultetus_sphere.id'))
+    date_added = Column(TIMESTAMP, nullable=False, server_default=text("sysdate "))
