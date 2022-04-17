@@ -165,7 +165,6 @@ def main():
 
     print("Mark actual and outdated vacancies...")
     vacs_affected_transformed = [(vac_id, 0) for vac_id in vacs_affected]
-    print(len(vacs_affected_transformed))
     session.query(
         FacultetusVac
         ).filter(
