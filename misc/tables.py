@@ -8,13 +8,23 @@ Base = declarative_base()
 metadata = Base.metadata
 
 
+class FacultetusActivityType(Base):
+    __tablename__ = "facultetus_activity_type"
+    __table_args__ = {"schema": "apiuser"}
+
+    id = Column(Integer, primary_key=True)
+    name = Column(VARCHAR(100))
+    date_added = Column(TIMESTAMP, server_default=text("sysdate"))
+    name_ru = Column(VARCHAR(100))
+
+
 class FacultetusActivity(Base):
     __tablename__ = "facultetus_activity"
     __table_args__ = {"schema": "apiuser"}
 
-    id = Column(VARCHAR(10), primary_key=True, comment='ID события')
+    id = Column(VARCHAR(10), primary_key=True, comment="ID события")
     created = Column(TIMESTAMP, comment="Дата создания")
-    cprofile_id = Column(VARCHAR(10), comment='ID создателя')
+    cprofile_id = Column(VARCHAR(10), comment="ID создателя")
     type = Column(VARCHAR(30), comment="Тип события")
     type_text = Column(VARCHAR(30), comment="Тип события")
     published = Column(VARCHAR(1), comment="Статус публикации")
@@ -24,8 +34,8 @@ class FacultetusActivity(Base):
     leader_event_id = Column(VARCHAR(10), comment="ID события на Leader-id")
     timepad_event_id = Column(VARCHAR(10), comment="ID события на Timepad")
     university_id = Column(VARCHAR(10), comment="ID университета")
-    fair_id = Column(VARCHAR(10), comment='ID ярмарки вакансий')
-    title = Column(VARCHAR(200), comment="Название события")
+    fair_id = Column(VARCHAR(10), comment="ID ярмарки вакансий")
+    title = Column(VARCHAR(500), comment="Название события")
     slogan = Column(VARCHAR(350), comment="Краткое описание события")
     description = Column(VARCHAR(4000), comment="Описание события")
     background_pic = Column(VARCHAR(150), comment="Заставка события")
@@ -36,11 +46,14 @@ class FacultetusActivity(Base):
     timezone = Column(VARCHAR(10))
     require_leader_auth = Column(VARCHAR(1))
     require_rsv_auth = Column(VARCHAR(1))
-    region = Column(VARCHAR(50), comment="Регион")
-    city = Column(VARCHAR(50), comment="Город")
+    region = Column(VARCHAR(150), comment="Регион")
+    city = Column(VARCHAR(100), comment="Город")
     address = Column(VARCHAR(250), comment="Адрес")
     online = Column(
-        VARCHAR(1), comment="Предусмотрено онлайн-участие", name="online", quote=True
+        VARCHAR(1),
+        comment="Предусмотрено онлайн-участие",
+        name="online",
+        quote=True
     )
     external_link = Column(VARCHAR(500), comment="Внешняя ссылка")
     author_title = Column(VARCHAR(100), comment="Название автора события")
@@ -60,6 +73,11 @@ class FacultetusActivity(Base):
     skip_auth = Column(VARCHAR(1))
     group_id = Column(VARCHAR(10))
     photo_payload = Column(VARCHAR(1000))
+    type_id = Column(ForeignKey("apiuser.facultetus_activity_type.id"))
+    date_sorter = Column(TIMESTAMP)
+    one_day_priority = Column(Integer)
+
+    type1 = relationship("FacultetusActivityType")
 
 
 class FacultetusUniversity(Base):
@@ -130,8 +148,8 @@ class FacultetusVac(Base):
 
 
 class FacultetusSphere(Base):
-    __tablename__ = 'facultetus_sphere'
-    __table_args__ = {'schema': 'apiuser'}
+    __tablename__ = "facultetus_sphere"
+    __table_args__ = {"schema": "apiuser"}
 
     id = Column(Integer, primary_key=True)
     name = Column(VARCHAR(150), nullable=False)
@@ -139,39 +157,30 @@ class FacultetusSphere(Base):
 
 
 class FacultetusEmployerSphere(Base):
-    __tablename__ = 'facultetus_employer_sphere'
-    __table_args__ = {'schema': 'apiuser'}
+    __tablename__ = "facultetus_employer_sphere"
+    __table_args__ = {"schema": "apiuser"}
 
     id = Column(Integer, primary_key=True)
     employer_id = Column(Integer)
-    sphere_id = Column(ForeignKey('apiuser.facultetus_sphere.id'))
+    sphere_id = Column(ForeignKey("apiuser.facultetus_sphere.id"))
     date_added = Column(TIMESTAMP, nullable=False, server_default=text("sysdate "))
 
-    sphere = relationship('FacultetusSphere')
-
-
-class FacultetusActivityType(Base):
-    __tablename__ = 'facultetus_activity_type'
-    __table_args__ = {'schema': 'apiuser'}
-
-    id = Column(Integer, primary_key=True)
-    name = Column(VARCHAR(100))
-    date_added = Column(TIMESTAMP, server_default=text("sysdate"))
+    sphere = relationship("FacultetusSphere")
 
 
 class FacultetusVacSphere(Base):
-    __tablename__ = 'facultetus_vac_sphere'
-    __table_args__ = {'schema': 'apiuser'}
+    __tablename__ = "facultetus_vac_sphere"
+    __table_args__ = {"schema": "apiuser"}
 
     id = Column(Integer, primary_key=True)
     position_id = Column(VARCHAR(100))
-    sphere_id = Column(ForeignKey('apiuser.facultetus_sphere.id'))
+    sphere_id = Column(ForeignKey("apiuser.facultetus_sphere.id"))
     date_added = Column(TIMESTAMP, nullable=False, server_default=text("sysdate "))
 
 
 class FacultetusVacLog(Base):
-    __tablename__ = 'facultetus_vac_log'
-    __table_args__ = {'schema': 'apiuser'}
+    __tablename__ = "facultetus_vac_log"
+    __table_args__ = {"schema": "apiuser"}
 
     id = Column(Integer, primary_key=True)
     added = Column(Integer)

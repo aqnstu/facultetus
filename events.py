@@ -20,6 +20,7 @@ university_ids = [elem for tup in university_ids_raw for elem in tup]
 def main():
     types_list = [type.__dict__ for type in session.query(FacultetusActivityType).all()]
     types_dict = {sphere['name']: sphere['id'] for sphere in types_list}
+    print(types_dict)
 
     for university_id in university_ids:
         print(f"> University ID: {university_id}...")
@@ -72,6 +73,9 @@ def main():
                     )
                     event["photo_payload"] = ",".join(event.get("photo_payload") or []) \
                         if not event.get("photo_payload") else None
+                    event["date_sorter"] = str_to_datetaime(
+                        event.get("date_sorter"), "%Y-%m-%d %H:%M:%S"
+                    )
 
                     if (
                         not session.query(FacultetusActivityType)
@@ -83,7 +87,7 @@ def main():
 
                     event["type_id"] = types_dict.get(event["type"])
 
-                    # session.add(FacultetusActivity(**event))
+                    session.add(FacultetusActivity(**event))
             session.commit()
 
             current_offset += api_config["OFFSET"]
