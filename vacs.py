@@ -65,8 +65,8 @@ def main():
                 "Content-Type": "application/json; charset=UTF-8",
             },
             params={
-                "university_id": api_config["UNIVERSITY_ID"],
-                "offset": current_offset,
+                # "university_id": api_config["UNIVERSITY_ID"],
+                "offset": current_offset
             },
         )
 
