@@ -12,7 +12,7 @@ from time import time
 from typing import List
 
 from configs.facultetus import api_config
-from misc.helpers import exit_on_fail, session, transform_list_to_str
+from misc.helpers import session, transform_list_to_str
 from misc.log import logger
 from misc.tables import FacultetusEmployerSphere, FacultetusSphere, \
     FacultetusVac, FacultetusVacSphere, \
