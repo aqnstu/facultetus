@@ -5,9 +5,9 @@
 """
 
 import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 from requests import get
-from sqlalchemy import and_, tuple_
+from sqlalchemy import and_, tuple_, or_
 from time import time
 from typing import List
 
@@ -74,33 +74,21 @@ def main():
             break
 
         for vac in response.json()["response"]:
-            vac["spheres"] = (
-                transform_list_to_str(vac["spheres"])
-                if vac.get("spheres")
-                else None
-            )
+            for field in ("spheres", "langs", "skills", "tests", "professions"):
+                vac[field] = transform_list_to_str(vac[field]) if vac.get(field) else None
+
+            for field in ("cash_from", "cash_to"):
+                vac[field] = int(vac[field]) if vac[field] else None
+
+            for field in ("description", "requirements", "cond"):
+                if isinstance(vac[field], str):
+                    vac[field] = vac[field][:3997] + '...' if len(vac[field]) > 4000 else vac[field]
 
             if (
                 not session.query(FacultetusVac)
                 .filter(FacultetusVac.position_id == vac["position_id"])
                 .one_or_none()
             ):
-                vac["langs"] = (
-                    transform_list_to_str(vac["langs"]) if vac.get("langs") else None
-                )
-                vac["skills"] = (
-                    transform_list_to_str(vac["skills"]) if vac.get("skills") else None
-                )
-                vac["tests"] = (
-                    transform_list_to_str(vac["tests"]) if vac.get("tests") else None
-                )
-                vac["professions"] = (
-                    transform_list_to_str(vac["professions"])
-                    if vac.get("professions")
-                    else None
-                )
-                vac["cash_from"] = int(vac["cash_from"]) if vac["cash_from"] else None
-                vac["cash_to"] = int(vac["cash_to"]) if vac["cash_to"] else None
                 vacs_added += 1
                 vacs_affected.append(vac["position_id"])
                 session.add(FacultetusVac(**vac))
@@ -164,13 +152,12 @@ def main():
     """)
 
     print("Mark actual and outdated vacancies...")
-    vacs_affected_transformed = [(vac_id, 0) for vac_id in vacs_affected]
     session.query(
         FacultetusVac
         ).filter(
             and_(
-                tuple_(FacultetusVac.position_id, 0).in_(vacs_affected_transformed),
-                FacultetusVac.position_id.isnot(None)
+                FacultetusVac.date_added.isnot(None),
+                FacultetusVac.date_updated > datetime.now() - timedelta(hours=4)
             )
         ).update({
             "date_deleted": None
@@ -180,9 +167,15 @@ def main():
     vacs_droped = session.query(
         FacultetusVac
         ).filter(
-            and_(
-                tuple_(FacultetusVac.position_id, 0).not_in(vacs_affected_transformed),
-                FacultetusVac.position_id.is_(None)
+            or_(
+                and_(
+                    FacultetusVac.date_added <= datetime.now() - timedelta(hours=4),
+                    FacultetusVac.date_updated.is_(None)
+                ),
+                and_(
+                    FacultetusVac.date_added.isnot(None),
+                    FacultetusVac.date_updated <= datetime.now() - timedelta(hours=4)
+                )
             )
         ).update({
             "date_deleted": datetime.now()
