@@ -7,7 +7,7 @@
 import copy
 from datetime import datetime, timedelta
 from requests import get
-from sqlalchemy import and_, tuple_, or_
+from sqlalchemy import and_, or_
 from time import time
 from typing import List
 
@@ -56,6 +56,7 @@ def main():
     current_offset = 0
     vacs_added, vacs_updated, vacs_droped = 0, 0, 0
     vacs_affected = []
+    date_updated = datetime.now()
     print("Update vacs...")
     while True:
         print(f"> Page {int(current_offset / api_config['OFFSET'])}...")
@@ -95,6 +96,7 @@ def main():
             else:
                 vac_copy = copy.deepcopy(vac)
                 del vac_copy["position_id"]
+                vac_copy["date_updated"] = date_updated
                 session.query(FacultetusVac) \
                     .filter(FacultetusVac.position_id == vac["position_id"]) \
                     .update(vac_copy)
@@ -151,13 +153,14 @@ def main():
         END;
     """)
 
+    vac_hours_delta = 2
     print("Mark actual and outdated vacancies...")
     session.query(
         FacultetusVac
         ).filter(
             and_(
                 FacultetusVac.date_added.isnot(None),
-                FacultetusVac.date_updated > datetime.now() - timedelta(hours=4)
+                FacultetusVac.date_updated > datetime.now() - timedelta(hours=vac_hours_delta)
             )
         ).update({
             "date_deleted": None
@@ -169,12 +172,12 @@ def main():
         ).filter(
             or_(
                 and_(
-                    FacultetusVac.date_added <= datetime.now() - timedelta(hours=4),
+                    FacultetusVac.date_added <= datetime.now() - timedelta(hours=vac_hours_delta),
                     FacultetusVac.date_updated.is_(None)
                 ),
                 and_(
                     FacultetusVac.date_added.isnot(None),
-                    FacultetusVac.date_updated <= datetime.now() - timedelta(hours=4)
+                    FacultetusVac.date_updated <= datetime.now() - timedelta(hours=vac_hours_delta)
                 )
             )
         ).update({
